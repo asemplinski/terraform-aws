@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "terraform-up-and-running-state-69"
-    key = "stage/data-store/mysql/terraform.tfstate"
+    key = "prod/data-store/mysql/terraform.tfstate"
     region = "us-east-2"
 
     dynamodb_table = "terraform-up-and-running-locks"
@@ -20,7 +20,7 @@ resource "aws_db_instance" "mysql" {
     allocated_storage = 10
     instance_class = "db.t2.micro"
     skip_final_snapshot = true
-    db_name = "heelerDatabaseStage"
+    db_name = "heelerDatabaseProd"
 
     username = var.db_username
     password = var.db_password
