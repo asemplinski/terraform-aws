@@ -15,10 +15,15 @@ provider "aws" {
 
 
 module "webserver_cluster"{
-    source = "../../../../modules/services/webserver-cluster"
+  source = "../../../../modules/services/webserver-cluster"
 
-    cluster_name = "webservers-stage"
-    db_remote_state_bucket = "terraform-up-and-running-state-69"
-    db_remote_state_key = "stage/data-store/mysql/terraform.tfstate"
+  cluster_name = "webservers-stage"
+  ami = "ami-0fb653ca2d3203ac1"
+  server_text = "This will Replace the text"
+
+  db_remote_state_bucket = "terraform-up-and-running-state-69"
+  db_remote_state_key = "stage/data-store/mysql/terraform.tfstate"
+
+  enable_autoscaling = false
 
 }

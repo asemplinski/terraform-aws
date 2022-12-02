@@ -1,5 +1,3 @@
-
-
 locals {
   http_port = 80
   any_port = 0
@@ -9,7 +7,7 @@ locals {
 }
  
 resource "aws_launch_configuration" "example" {
-  image_id = "ami-0fb653ca2d3203ac1"
+  image_id = var.ami
   instance_type = var.instance_type
   security_groups =  [aws_security_group.instance.id]
 
@@ -18,6 +16,7 @@ resource "aws_launch_configuration" "example" {
                   server_port = var.server_port
                   db_address = data.terraform_remote_state.db.outputs.address
                   db_port = data.terraform_remote_state.db.outputs.port
+                  server_text = var.server_text
               })
 
   lifecycle {
@@ -26,11 +25,22 @@ resource "aws_launch_configuration" "example" {
 }
 
 resource "aws_autoscaling_group" "example" {
+  name = "${var.cluster_name}-${aws_launch_configuration.example.name}"
+
+
+
   launch_configuration = aws_launch_configuration.example.name
   vpc_zone_identifier = data.aws_subnets.default.ids
 
   min_size = var.min-size
   max_size = var.max-size
+
+  #wait for atleast this many instances to pass health checks before considering ASG deployment complete
+  min_elb_capacity = var.min-size
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
@@ -42,7 +52,11 @@ resource "aws_autoscaling_group" "example" {
   }
 
   dynamic "tag" {
-    for_each = var.custom_tags
+    for_each = {
+      for key, value in var.custom_tags:
+          key => upper(value)
+            if key != "Name"
+    }
     content {
       key = tag.key
       value = tag.value
@@ -51,6 +65,31 @@ resource "aws_autoscaling_group" "example" {
   }
 
 }
+
+resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  autoscaling_group_name = aws_autoscaling_group.example.name
+  scheduled_action_name = "scale-out-during-business-hours"
+  min_size = 2
+  max_size = 10
+  desired_capacity = 10
+  recurrence = "0 9 * * *"
+
+}
+
+resource "aws_autoscaling_schedule" "scale_in_at_night" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  autoscaling_group_name = aws_autoscaling_group.example.name
+  scheduled_action_name = "scale-in-at-night"
+  min_size = 2
+  max_size = 10
+  desired_capacity = 2
+  recurrence = "0 17 * * *"
+
+}
+
 
 resource "aws_security_group" "instance" {
     name = "${var.cluster_name}-instance"
