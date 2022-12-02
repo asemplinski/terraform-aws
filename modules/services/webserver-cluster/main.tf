@@ -25,7 +25,7 @@ resource "aws_launch_configuration" "example" {
 }
 
 resource "aws_autoscaling_group" "example" {
-  name = "${var.cluster_name}-${aws_launch_configuration.example.name}"
+  name = var.cluster_name
 
 
 
@@ -35,12 +35,13 @@ resource "aws_autoscaling_group" "example" {
   min_size = var.min-size
   max_size = var.max-size
 
-  #wait for atleast this many instances to pass health checks before considering ASG deployment complete
-  min_elb_capacity = var.min-size
-
-  lifecycle {
-    create_before_destroy = true
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
   }
+
 
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
