@@ -1,4 +1,10 @@
 terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
   backend "s3" {
     bucket = "terraform-up-and-running-state-69"
     key = "prod/data-store/mysql/terraform.tfstate"
