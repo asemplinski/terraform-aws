@@ -9,3 +9,8 @@ output "port" {
     description = "MySql database port"
   
 }
+
+output "arn" {
+    value = aws_db_instance.mysql.arn
+    description = "Outputs the DB arn"
+}

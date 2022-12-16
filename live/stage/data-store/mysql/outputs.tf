@@ -1,11 +1,15 @@
 output "address" {
-    value = aws_db_instance.mysql.address
+    value = module.mysql.address
     description = "MySql database address"
   
 }
 
 output "port" {
-    value = aws_db_instance.mysql.port
+    value = module.mysql.port
     description = "MySql database port"
   
+}
+
+output "arn" {
+    value = module.mysql.arn
 }

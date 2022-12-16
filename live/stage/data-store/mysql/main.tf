@@ -20,15 +20,12 @@ provider "aws" {
   region = "us-east-2"
 }
 
-resource "aws_db_instance" "mysql" {
-    identifier_prefix = "heeler"
-    engine = "mysql"
-    allocated_storage = 10
-    instance_class = "db.t2.micro"
-    skip_final_snapshot = true
-    db_name = "heelerDatabaseStage"
+module "mysql" {
+  source = "../../../../modules/data-stores/mysql"
 
-    username = var.db_username
-    password = var.db_password
+  db_name = "heelerStage"
+  db_username = var.db_username
+  db_password = var.db_password
+
 
 }
